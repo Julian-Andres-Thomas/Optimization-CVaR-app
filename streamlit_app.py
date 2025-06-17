@@ -5,7 +5,6 @@ import yfinance as yf
 import cvxpy as cp
 import streamlit as st
 
-
 st.title("Portfolio Optimizer: Minimizing CVaR Risk")
 
 with st.expander("What is CVaR (Conditional Value at Risk)?"):
@@ -23,11 +22,11 @@ st.write("### Fill out your preferences:")
 
 st.markdown("""
 **Enter at least two stock tickers separated by commas (e.g.: AAPL, MSFT, TSLA)**
-- **No final dots.**
+- **No final dots on tickers.**
 - **Ensure tickers are in Yahoo Finance format: [Click here to verify tickers on Yahoo Finance](https://finance.yahoo.com/lookup).**
 """)
 
-tickers_input = st.text_input(label="", placeholder= 'TSLA, AMS.MC, T, CSCO')
+tickers_input = st.text_input(label="", placeholder='TSLA, AMS.MC, T, CSCO')
 st.markdown("**Select the date range for the analysis:**")
 start_input = st.text_input('Start Date (YYYY-MM-DD format)')
 end_input = st.text_input('End Date (YYYY-MM-DD format)')
@@ -40,85 +39,121 @@ with st.expander("What is the Confidence Level?"):
     """)
 
 if tickers_input and start_input and end_input:
+
+    # --- Ticker validation ---
+    tickers = [ticker.strip() for ticker in tickers_input.split(',')]
+
+    # Check for empty tickers (caused by double commas)
+    if any(t == "" for t in tickers):
+        st.error("You have empty tickers (double commas or trailing commas?). Please fix your input.")
+        st.stop()
+
+    # Check tickers do NOT start or end with a dot
+    for t in tickers:
+        if t.startswith(".") or t.endswith("."):
+            st.error(f"Ticker '{t}' cannot start or end with a dot.")
+            st.stop()
+
+    # Require at least 2 tickers to optimize properly
+    if len(tickers) < 2:
+        st.error("Please enter at least two valid tickers.")
+        st.stop()
+
+    # --- Date validation ---
+    from datetime import datetime
+
     try:
-        tickers = [ticker.strip() for ticker in tickers_input.split(',')]
-        price_data = yf.download(
-            tickers, start=start_input, end=end_input,
-            multi_level_index=False, auto_adjust=False
-        )['Adj Close']
+        start_dt = datetime.strptime(start_input, '%Y-%m-%d')
+        end_dt = datetime.strptime(end_input, '%Y-%m-%d')
+        if start_dt >= end_dt:
+            st.error("Start date must be before end date.")
+            st.stop()
+    except ValueError:
+        st.error("Dates must be in YYYY-MM-DD format.")
+        st.stop()
 
-        daily_returns = np.log(price_data).diff().dropna()
-        daily_mean_returns = daily_returns.mean()
+    # --- Main calculation with loading spinner ---
+    with st.spinner('Downloading data and optimizing portfolio...'):
+        try:
+            price_data = yf.download(
+                tickers, start=start_input, end=end_input,
+                multi_level_index=False, auto_adjust=False
+            )['Adj Close']
 
-        alpha = 1 - confidence_level
-        num_data = daily_returns.shape[0]
-        num_assets = daily_returns.shape[1]
+            daily_returns = np.log(price_data).diff().dropna()
+            daily_mean_returns = daily_returns.mean()
 
-        weights = cp.Variable(num_assets)
-        t = cp.Variable()
-        ui = cp.Variable(num_data)
+            alpha = 1 - confidence_level
+            num_data = daily_returns.shape[0]
+            num_assets = daily_returns.shape[1]
 
-        risk = t + cp.sum(ui) / (alpha * num_data)
-        returns = daily_mean_returns.to_numpy() @ weights
+            weights = cp.Variable(num_assets)
+            t = cp.Variable()
+            ui = cp.Variable(num_data)
 
-        constraints = [
-            -daily_returns.to_numpy() @ weights - t - ui <= 0,
-            ui >= 0,
-            cp.sum(weights) == 1,
-            weights >= 0,
-        ]
+            risk = t + cp.sum(ui) / (alpha * num_data)
+            returns = daily_mean_returns.to_numpy() @ weights
 
-        objective = cp.Minimize(risk)
-        prob = cp.Problem(objective, constraints)
-        prob.solve()
+            constraints = [
+                -daily_returns.to_numpy() @ weights - t - ui <= 0,
+                ui >= 0,
+                cp.sum(weights) == 1,
+                weights >= 0,
+            ]
 
-        portfolio_weights = np.array([np.round(x, 3) if x > 1e-4 else 0 for x in weights.value])
-        portfolio_return = (portfolio_weights @ daily_mean_returns) * 252
-        portfolio_cvar = prob.value
+            objective = cp.Minimize(risk)
+            prob = cp.Problem(objective, constraints)
+            prob.solve()
 
-        filtered_weights = []
-        filtered_labels = []
+            portfolio_weights = np.array([np.round(x, 3) if x > 1e-4 else 0 for x in weights.value])
+            portfolio_return = (portfolio_weights @ daily_mean_returns) * 252
+            portfolio_cvar = prob.value
 
-        for w, label in zip(portfolio_weights, price_data.columns):
-            if w > 0:
-                filtered_weights.append(w)
-                filtered_labels.append(label)
+            filtered_weights = []
+            filtered_labels = []
 
-        fig, ax = plt.subplots(figsize=(6, 6))
-        colors = plt.cm.tab20.colors
+            for w, label in zip(portfolio_weights, price_data.columns):
+                if w > 0:
+                    filtered_weights.append(w)
+                    filtered_labels.append(label)
 
-        wedges, _ = ax.pie(
-            filtered_weights,
-            labels=None,
-            startangle=180,
-            colors=colors[:len(filtered_weights)],
-            wedgeprops={'width': 0.3, 'edgecolor': 'black'}
-        )
+            fig, ax = plt.subplots(figsize=(6, 6))
+            colors = plt.cm.tab20.colors
 
-        ax.set_title('Optimal weights of your portfolio')
+            wedges, _ = ax.pie(
+                filtered_weights,
+                labels=None,
+                startangle=180,
+                colors=colors[:len(filtered_weights)],
+                wedgeprops={'width': 0.3, 'edgecolor': 'black'}
+            )
 
-        legend_labels = [f"{label}: {weight * 100:.2f}%" for label, weight in zip(filtered_labels, filtered_weights)]
-        ax.legend(
-            wedges,
-            legend_labels,
-            loc='lower center',
-            bbox_to_anchor=(0.5, -0.2),
-            ncol=2,
-            frameon=False
-        )
+            ax.set_title('Optimal weights of your portfolio')
 
-        st.write("## Optimal weights and returns of your portfolio")
-        col1, col2 = st.columns(2)
-        col1.pyplot(fig)
-        col2.metric(label="Total return of your portfolio (annual)", value=f"{portfolio_return * 100:.2f}%")
-        col2.metric(label=f"Portfolio's daily CVaR", value=f"{portfolio_cvar * 100:.2f}%")
+            legend_labels = [f"{label}: {weight * 100:.2f}%" for label, weight in zip(filtered_labels, filtered_weights)]
+            ax.legend(
+                wedges,
+                legend_labels,
+                loc='lower center',
+                bbox_to_anchor=(0.5, -0.2),
+                ncol=2,
+                frameon=False
+            )
 
-        with st.expander("What is Portfolio's daily CVaR?"):
-            st.markdown("""
-            Example for a 95% confidence level: Below the 5% worst cases, the average loss is X% (Portfolio's daily CVaR) of your capital.
-            """)
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
+            st.write("## Optimal weights and returns of your portfolio")
+            col1, col2 = st.columns(2)
+            col1.pyplot(fig)
+            col2.metric(label="Total return of your portfolio (annual)", value=f"{portfolio_return * 100:.2f}%")
+            col2.metric(label=f"Portfolio's daily CVaR", value=f"{portfolio_cvar * 100:.2f}%")
+
+            with st.expander("What is Portfolio's daily CVaR?"):
+                st.markdown("""
+                Example for a 95% confidence level: Below the 5% worst cases, the average loss is X% (Portfolio's daily CVaR) of your capital.
+                """)
+
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+
 else:
     st.write("Please enter tickers, start date and end date to see results.")
 
@@ -131,4 +166,3 @@ footer_html = """
 </div>
 """
 st.markdown(footer_html, unsafe_allow_html=True)
-
