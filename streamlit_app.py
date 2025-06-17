@@ -21,8 +21,13 @@ with st.expander("What is CVaR (Conditional Value at Risk)?"):
 
 st.write("### Fill out your preferences:")
 
-st.markdown("**Write your tickers separated by commas with no points. Use Yahoo finance tickers format.**")
-st.markdown("[Check tickers on Yahoo Finance](https://finance.yahoo.com/lookup)")
+st.markdown("""
+**Enter stock tickers separated by commas**
+- **No final dots.**
+- **Ensure tickers are in Yahoo Finance format.**
+- [Click here to verify tickers on Yahoo Finance](https://finance.yahoo.com/lookup)
+""")
+
 tickers_input = st.text_input(label="", placeholder= 'TSLA, AMS.MC, T, CSCO')
 st.markdown("**Select the date range for the analysis:**")
 start_input = st.text_input('Start Date (YYYY-MM-DD format)')
