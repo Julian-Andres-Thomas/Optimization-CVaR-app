@@ -5,6 +5,10 @@ import yfinance as yf
 import cvxpy as cp
 import streamlit as st
 
+st.components.v1.html("""
+<meta name="google-site-verification" content="tu_codigo" />
+""", height=0)
+
 st.title("Portfolio Optimizer: Minimizing CVaR Risk")
 
 with st.expander("What is CVaR (Conditional Value at Risk)?"):
