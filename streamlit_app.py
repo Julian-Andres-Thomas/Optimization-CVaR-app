@@ -5,6 +5,7 @@ import yfinance as yf
 import cvxpy as cp
 import streamlit as st
 
+
 st.title("Portfolio Optimizer: Minimizing CVaR Risk")
 
 with st.expander("What is CVaR (Conditional Value at Risk)?"):
@@ -26,7 +27,7 @@ st.markdown("""
 - **Ensure tickers are in Yahoo Finance format: [Click here to verify tickers on Yahoo Finance](https://finance.yahoo.com/lookup).**
 """)
 
-tickers_input = st.text_input(label="", placeholder='TSLA, AMS.MC, T, CSCO')
+tickers_input = st.text_input(label="", placeholder= 'TSLA, AMS.MC, T, CSCO')
 st.markdown("**Select the date range for the analysis:**")
 start_input = st.text_input('Start Date (YYYY-MM-DD format)')
 end_input = st.text_input('End Date (YYYY-MM-DD format)')
@@ -41,32 +42,38 @@ with st.expander("What is the Confidence Level?"):
 if tickers_input and start_input and end_input:
     try:
         tickers = [ticker.strip().upper() for ticker in tickers_input.split(',') if ticker.strip()]
-        price_data = yf.download(tickers, start=start_input, end=end_input, auto_adjust=False)['Adj Close']
+        raw_data = yf.download(tickers, start=start_input, end=end_input, auto_adjust=False)
+
+        if raw_data.empty:
+            st.error("❌ No data found. Please check your tickers and date range.")
+            st.stop()
+
+        price_data = raw_data['Adj Close'] if 'Adj Close' in raw_data else raw_data['Close']
 
         if isinstance(price_data, pd.Series):
             price_data = price_data.to_frame()
 
-        # Detect invalid tickers
-        valid_tickers = list(price_data.columns)
-        invalid_tickers = [t for t in tickers if t not in valid_tickers]
+        # Normalize columns
+        price_data.columns = [col.upper() for col in price_data.columns]
 
-        if len(valid_tickers) < 2:
-            st.error("You need at least 2 valid tickers to run the optimization.")
-            if invalid_tickers:
-                st.warning(f"Invalid or missing tickers: {', '.join(invalid_tickers)}")
-            st.stop()
+        valid_tickers = list(price_data.columns)
+        requested_tickers = [t.upper() for t in tickers]
+        invalid_tickers = [t for t in requested_tickers if t not in valid_tickers]
 
         if invalid_tickers:
-            st.warning(f"Some tickers were not found or had no data: {', '.join(invalid_tickers)}")
+            st.warning(f"⚠️ These tickers failed to download or had no data: {', '.join(invalid_tickers)}")
 
-        # Only use valid tickers
-        price_data = price_data[valid_tickers].dropna()
-
-        daily_returns = np.log(price_data).diff().dropna()
-        if daily_returns.empty:
-            st.error("Not enough data to compute returns. Try extending the date range.")
+        if len(valid_tickers) < 2:
+            st.error("❌ You need at least 2 valid tickers to run the optimization.")
             st.stop()
 
+        price_data = price_data[valid_tickers].dropna()
+
+        if price_data.empty or price_data.shape[0] < 2:
+            st.error("❌ Not enough historical data. Try different dates.")
+            st.stop()
+
+        daily_returns = np.log(price_data).diff().dropna()
         daily_mean_returns = daily_returns.mean()
 
         alpha = 1 - confidence_level
@@ -136,6 +143,7 @@ if tickers_input and start_input and end_input:
             st.markdown("""
             Example for a 95% confidence level: Below the 5% worst cases, the average loss is X% (Portfolio's daily CVaR) of your capital.
             """)
+
     except Exception as e:
         st.error(f"An error occurred: {e}")
 else:
