@@ -14,7 +14,7 @@ It uses **historical data from Yahoo Finance**, applies **convex optimization** 
 
 ---
 
-## 
+## 🔧 Tools
 
 * **Python**
 * **Streamlit**
