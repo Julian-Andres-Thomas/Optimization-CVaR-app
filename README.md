@@ -10,7 +10,7 @@ It uses **historical data from Yahoo Finance**, applies **convex optimization** 
 
 ## 🚀 Features
 * ⚠️ Minimizes **Conditional Value at Risk (CVaR)** at a chosen confidence level.
-* 📊 Visualizes optimal asset allocation with a clean donut chart.
+* 📊 Visualizes optimal asset allocation.
 * 📆 Customizable date range and list of tickers.
 * 🧠 Built with a user-friendly Streamlit interface.
 
