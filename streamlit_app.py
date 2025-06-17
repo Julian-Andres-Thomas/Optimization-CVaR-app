@@ -22,10 +22,9 @@ with st.expander("What is CVaR (Conditional Value at Risk)?"):
 st.write("### Fill out your preferences:")
 
 st.markdown("""
-**Enter stock tickers separated by commas (e.g:AAPL, MSFT, TSLA)**
+**Enter stock tickers separated by commas (e.g.: AAPL, MSFT, TSLA)**
 - **No final dots.**
-- **Ensure tickers are in Yahoo Finance format.**
-- [Click here to verify tickers on Yahoo Finance](https://finance.yahoo.com/lookup)
+- **Ensure tickers are in Yahoo Finance format: [Click here to verify tickers on Yahoo Finance](https://finance.yahoo.com/lookup).**
 """)
 
 tickers_input = st.text_input(label="", placeholder= 'TSLA, AMS.MC, T, CSCO')
