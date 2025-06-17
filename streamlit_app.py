@@ -42,7 +42,7 @@ with st.expander("What is the Confidence Level?"):
 if tickers_input and start_input and end_input:
     try:
         tickers = [ticker.strip().upper() for ticker in tickers_input.split(',') if ticker.strip()]
-        raw_data = yf.download(tickers, start=start_input, end=end_input, auto_adjust=False)
+        raw_data = yf.download(tickers, start=start_input, end=end_input, auto_adjust=False, multi_level_index = False)['Adj Close']
 
         if raw_data.empty:
             st.error("❌ No data found. Please check your tickers and date range.")
