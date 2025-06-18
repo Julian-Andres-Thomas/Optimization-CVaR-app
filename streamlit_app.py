@@ -41,7 +41,7 @@ with st.expander("What is the Confidence Level?"):
 
 if tickers_input and start_input and end_input:
     try:
-        raw_data = yf.download(tickers, start=start_input, end=end_input, auto_adjust=False, multi_level_index = False)['Adj Close']
+        raw_data = yf.download(tickers_input, start=start_input, end=end_input, auto_adjust=False, multi_level_index = False)['Adj Close']
         raw_data.dropna(axis = 1, how = 'all', inplace = True)
         raw_data.dropna(axis = 0, how = 'any', inplace = True)
         valid_tickers = list(raw_data.columns)
