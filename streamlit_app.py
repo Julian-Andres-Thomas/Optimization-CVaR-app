@@ -125,5 +125,8 @@ if tickers_input and start_input and end_input:
             col2.metric(label="Total return of your portfolio (annual)", value=f"{portfolio_return * 100:.2f}%")
             col2.metric(label=f"Portfolio's daily CVaR", value=f"{portfolio_cvar * 100:.2f}%")
 
-            st.info("""
-            Short positions are not allowed. T
+            st.info(
+            """
+            Short positions are not allowed. The assets and their corresponding weights shown above represent the optimal allocation. 
+            If a ticker you entered is not shown, the optimizer assigned it a weight of 0%.
+            """)
