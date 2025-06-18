@@ -47,11 +47,12 @@ if tickers_input and start_input and end_input:
                 st.error("❌ No data found. Please check your tickers and date range.")
                 st.stop()
 
-            invalid_tickers = [ticker for ticker in tickers_input if ticker not in valid_tickers]
+            valid_tickers = list(raw_data.columns)
 
+            invalid_tickers = [ticker for ticker in tickers_input if ticker not in valid_tickers]
             if invalid_tickers:
-            st.error(f"❌ The following tickers do not exist or have no data: {', '.join(invalid_tickers)}")
-            st.stop()
+                st.error(f"❌ The following tickers do not exist or have no data: {', '.join(invalid_tickers)}")
+                st.stop()
 
             if len(valid_tickers) < 2:
                 st.error("❌ You need at least 2 valid tickers to run the optimization.")
@@ -125,20 +126,4 @@ if tickers_input and start_input and end_input:
             col2.metric(label=f"Portfolio's daily CVaR", value=f"{portfolio_cvar * 100:.2f}%")
 
             st.info("""
-            Short positions are not allowed. The assets and their corresponding weights shown above represent the optimal allocation. 
-            If a ticker you entered is not shown, the optimizer assigned it a weight of 0%.
-            """)
-
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
-else:
-    st.write("Please enter tickers, start date and end date to see results.")
-
-footer_html = """
-<div style="position: fixed; bottom: 10px; right: 10px; font-size: 12px; color: grey;">
-    © 2025 Julian Andres Thomas | Economics & Finance Student  <br>
-    <a href="mailto:julianandres.thomas@gmail.com" style="color: grey; text-decoration: none;">Email</a> | 
-    <a href="https://linkedin.com/in/julianandresthomas" target="_blank" style="color: grey; text-decoration: none;">LinkedIn</a>
-</div>
-"""
-st.markdown(footer_html, unsafe_allow_html=True)
+            Short positions are not allowed. T
