@@ -54,8 +54,9 @@ if tickers_input and start_input and end_input:
         
         for ticker in tickers:
             if ticker not in valid_tickers:
-                print(f'❌ This {ticker} does not exist. Please check again')
-
+                st.error("❌ This {ticker} does not exist. Please check again")
+                st.stop()
+                
         if len(valid_tickers) < 2:
             st.error("❌ You need at least 2 valid tickers to run the optimization.")
             st.stop()
