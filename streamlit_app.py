@@ -47,12 +47,11 @@ if tickers_input and start_input and end_input:
                 st.error("❌ No data found. Please check your tickers and date range.")
                 st.stop()
 
-            valid_tickers = list(raw_data.columns)
+            invalid_tickers = [ticker for ticker in tickers_input if ticker not in valid_tickers]
 
-            for ticker in tickers_input:
-                if ticker not in valid_tickers:
-                    st.error(f"❌ Ticker {ticker} does not exist or has no data.")
-                    st.stop()
+            if invalid_tickers:
+            st.error(f"❌ The following tickers do not exist or have no data: {', '.join(invalid_tickers)}")
+            st.stop()
 
             if len(valid_tickers) < 2:
                 st.error("❌ You need at least 2 valid tickers to run the optimization.")
