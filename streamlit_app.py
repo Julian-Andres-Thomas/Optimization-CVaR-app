@@ -48,31 +48,18 @@ if tickers_input and start_input and end_input:
             st.error("❌ No data found. Please check your tickers and date range.")
             st.stop()
 
-        price_data = raw_data['Adj Close'] if 'Adj Close' in raw_data else raw_data['Close']
-
-        if isinstance(price_data, pd.Series):
-            price_data = price_data.to_frame()
-
-        # Normalize columns
-        price_data.columns = [col.upper() for col in price_data.columns]
+        price_data = raw_data['Adj Close']
 
         valid_tickers = list(price_data.columns)
-        requested_tickers = [t.upper() for t in tickers]
-        invalid_tickers = [t for t in requested_tickers if t not in valid_tickers]
-
-        if invalid_tickers:
-            st.warning(f"⚠️ These tickers failed to download or had no data: {', '.join(invalid_tickers)}")
+        
+        for ticker in tickers:
+            if ticker not in valid_tickers:
+                print(f'❌ This {ticker} does not exist. Please check again')
 
         if len(valid_tickers) < 2:
             st.error("❌ You need at least 2 valid tickers to run the optimization.")
             st.stop()
-
-        price_data = price_data[valid_tickers].dropna()
-
-        if price_data.empty or price_data.shape[0] < 2:
-            st.error("❌ Not enough historical data. Try different dates.")
-            st.stop()
-
+            
         daily_returns = np.log(price_data).diff().dropna()
         daily_mean_returns = daily_returns.mean()
 
