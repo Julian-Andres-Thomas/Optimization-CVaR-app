@@ -58,7 +58,7 @@ if tickers_input and start_input and end_input:
         
         for ticker in tickers_input:
             if ticker not in valid_tickers:
-                st.error(f'❌ This {ticker} does not exist. Please check again.')
+                st.error(f'❌ Ticker {ticker} does not exist. Please check again.')
                 st.stop()
                 
         if len(valid_tickers) < 2:
