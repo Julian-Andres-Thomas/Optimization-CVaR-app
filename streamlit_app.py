@@ -56,11 +56,11 @@ if tickers_input and start_input and end_input:
 
         valid_tickers = list(price_data.columns)
         
-        for ticker in tickers_input:
-            if ticker not in valid_tickers:
-                st.error(f'❌ Ticker {ticker} does not exist. Please check again.')
-                st.stop()
-                
+        invalid_tickers = [ticker for ticker in tickers_input if ticker not in valid_tickers]
+        if invalid_tickers:
+            st.error(f"❌ The following tickers do not exist or have no data: {', '.join(invalid_tickers)}. Please check again.")
+            st.stop()
+       
         if len(valid_tickers) < 2:
             st.error("❌ You need at least 2 valid tickers to run the optimization.")
             st.stop()
