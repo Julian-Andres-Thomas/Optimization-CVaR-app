@@ -27,7 +27,7 @@ st.markdown("""
 tickers_input_raw = st.text_input(label="Tickers", placeholder='TSLA, AMS.MC, T, CSCO')
 tickers_input = [ticker.strip().upper() for ticker in tickers_input_raw.split(',') if ticker.strip()]
 
-st.write("### Select the start and end dates for your analysis")
+st.write("Select the start and end dates for your analysis")
 start_input = st.text_input('Start Date (YYYY-MM-DD format)')
 end_input = st.text_input('End Date (YYYY-MM-DD format)')
 confidence_level = st.number_input("Confidence Level", min_value=0.89, max_value=0.99, value=0.95)
