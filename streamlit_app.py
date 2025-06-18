@@ -21,7 +21,7 @@ st.write("### Fill out your preferences:")
 st.markdown("""
 **Enter at least two stock tickers separated by commas (e.g.: AAPL, MSFT, TSLA)**
 - No final dots.
-- Ensure tickers are in Yahoo Finance format.
+- Ensure tickers are in Yahoo Finance format. Check them here: https://finance.yahoo.com/lookup/
 """)
 
 tickers_input_raw = st.text_input(label="Tickers", placeholder='TSLA, AMS.MC, T, CSCO')
