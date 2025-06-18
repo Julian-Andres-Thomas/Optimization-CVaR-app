@@ -37,8 +37,8 @@ with st.expander("What is the Confidence Level?"):
     """)
 
 if tickers_input and start_input and end_input:
-    try:
-        with st.spinner("⏳ Optimizing portfolio, please wait..."):
+    with st.spinner("⏳ Optimizing portfolio, please wait..."):
+        try:
             raw_data = yf.download(tickers_input, start=start_input, end=end_input, auto_adjust=False, progress=False)['Adj Close']
             raw_data.dropna(axis=1, how='all', inplace=True)
             raw_data.dropna(axis=0, how='any', inplace=True)
@@ -130,8 +130,8 @@ if tickers_input and start_input and end_input:
             If a ticker you entered is not shown, the optimizer assigned it a weight of 0%.
             """)
 
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
 else:
     st.write("Please enter tickers, start date and end date to see results.")
 
