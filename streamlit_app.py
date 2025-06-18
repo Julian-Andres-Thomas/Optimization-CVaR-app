@@ -54,7 +54,7 @@ if tickers_input and start_input and end_input:
 
         valid_tickers = list(price_data.columns)
         
-        for ticker in tickers:
+        for ticker in tickers_input:
             if ticker not in valid_tickers:
                 st.error("❌ This {ticker} does not exist. Please check again")
                 st.stop()
