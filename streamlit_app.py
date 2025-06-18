@@ -41,14 +41,16 @@ with st.expander("What is the Confidence Level?"):
 
 if tickers_input and start_input and end_input:
     try:
-        tickers = [ticker.strip().upper() for ticker in tickers_input.split(',') if ticker.strip()]
         raw_data = yf.download(tickers, start=start_input, end=end_input, auto_adjust=False, multi_level_index = False)['Adj Close']
+        raw_data.dropna(axis = 1, how = 'all', inplace = True)
+        raw_data.dropna(axis = 0, how = 'any', inplace = True)
+        valid_tickers = list(raw_data.columns)
 
         if raw_data.empty:
             st.error("❌ No data found. Please check your tickers and date range.")
             st.stop()
 
-        price_data = raw_data['Adj Close']
+        price_data = raw_data
 
         valid_tickers = list(price_data.columns)
         
@@ -61,6 +63,7 @@ if tickers_input and start_input and end_input:
             st.error("❌ You need at least 2 valid tickers to run the optimization.")
             st.stop()
             
+        price_data = raw_data   
         daily_returns = np.log(price_data).diff().dropna()
         daily_mean_returns = daily_returns.mean()
 
