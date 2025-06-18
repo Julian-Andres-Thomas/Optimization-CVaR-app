@@ -129,6 +129,10 @@ if tickers_input and start_input and end_input:
         st.write("## Optimal weights and returns of your portfolio")
         col1, col2 = st.columns(2)
         col1.pyplot(fig)
+        col1.markdown("""
+        **Note:** *Short positions are not allowed in this optimization. The assets and their corresponding weights shown in the chart represent the optimal allocation selected by the model. If a ticker you entered is not included in the results, it means the optimizer assigned it a weight of 0%.*
+        """)
+
         col2.metric(label="Total return of your portfolio (annual)", value=f"{portfolio_return * 100:.2f}%")
         col2.metric(label=f"Portfolio's daily CVaR", value=f"{portfolio_cvar * 100:.2f}%")
 
