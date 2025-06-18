@@ -27,7 +27,7 @@ st.markdown("""
 - **Ensure tickers are in Yahoo Finance format: [Click here to verify tickers on Yahoo Finance](https://finance.yahoo.com/lookup).**
 """)
 
-tickers_input = st.text_input(label="", placeholder= 'TSLA, AMS.MC, T, CSCO')
+tickers_input = list(st.text_input(label="", placeholder= 'TSLA, AMS.MC, T, CSCO'))
 st.markdown("**Select the date range for the analysis:**")
 start_input = st.text_input('Start Date (YYYY-MM-DD format)')
 end_input = st.text_input('End Date (YYYY-MM-DD format)')
